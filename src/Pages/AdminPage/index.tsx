@@ -55,9 +55,10 @@ export const AdminPage = () => {
     });
     const id = max.id + 1;
 
-    setDatabase([...database, createData(id, name, +price)]);
+    const newDatabase = [...database, createData(id, name, +price)];
+    setDatabase(newDatabase);
     setCreateIsOpen(false);
-    setLocalDatabase(database);
+    setLocalDatabase(newDatabase);
     reset();
   }
 
