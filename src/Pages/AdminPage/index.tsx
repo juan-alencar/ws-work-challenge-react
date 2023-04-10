@@ -39,6 +39,12 @@ export const AdminPage = () => {
     price: 0,
   });
 
+  const localDatabase = localStorage.getItem("database");
+
+  function setLocalDatabase(newDatabase: IProduct[]) {
+    localStorage.setItem("database", JSON.stringify(newDatabase));
+  }
+
   function createData(id: number, name: string, price: number) {
     return { id, name, price };
   }
@@ -51,17 +57,20 @@ export const AdminPage = () => {
 
     setDatabase([...database, createData(id, name, +price)]);
     setCreateIsOpen(false);
+    setLocalDatabase(database);
     reset();
   }
 
   const rows = [
-    createData(1, "Arroz", 6.0),
-    createData(2, "Feijão", 6.0),
-    createData(3, "Macarrão", 6.0),
-    createData(4, "Calabresa", 6.0),
+    createData(1, "Chocolate", 13.0),
+    createData(2, "Tomato", 12.0),
+    createData(3, "Potato", 11.0),
+    createData(4, "Carrot", 10.0),
   ];
 
-  const [database, setDatabase] = useState<IProduct[]>(rows);
+  const [database, setDatabase] = useState<IProduct[]>(
+    localDatabase !== null ? JSON.parse(localDatabase) : rows
+  );
 
   function editRow({ name, price }: IProduct) {
     const row = database.find((row) => row.id === actualRow.id);
@@ -70,12 +79,13 @@ export const AdminPage = () => {
 
       const newRow = {
         id: actualRow.id,
-        name,
+        name: name === "" ? row.name : name,
         price: +price,
       };
 
       newDatabase.push(newRow);
       setDatabase(newDatabase);
+      setLocalDatabase(newDatabase);
       setEditIsOpen(false);
       reset();
     }
@@ -86,6 +96,7 @@ export const AdminPage = () => {
     if (row) {
       const newDatabase = database.filter((row) => row.id !== id);
       setDatabase(newDatabase);
+      setLocalDatabase(newDatabase);
     }
     setDeleteIsOpen(false);
   }
@@ -121,9 +132,7 @@ export const AdminPage = () => {
                   #{row.id}
                 </TableCell>
                 <TableCell align='right'>{row.name}</TableCell>
-                <TableCell align='right'>
-                  R$ {row.price.toPrecision(3)}
-                </TableCell>
+                <TableCell align='right'>R$ {row.price}</TableCell>
                 <TableCell align='right'>
                   <TableButton
                     onClick={() => {
@@ -156,9 +165,9 @@ export const AdminPage = () => {
         onRequestClose={() => setCreateIsOpen(false)}
       >
         <Form onSubmit={handleSubmit(createRow)}>
-          <input type='text' {...register("name")} />
-          <input type='text' {...register("price")} />
-          <Button image={""} type='submit' value='Salvar' />
+          <input type='text' {...register("name")} placeholder='Product Name' />
+          <input type='text' {...register("price")} placeholder='Price (R$)' />
+          <Button image={""} type='submit' value='SAVE' />
         </Form>
       </ReactModal>
 
@@ -170,17 +179,13 @@ export const AdminPage = () => {
         onRequestClose={() => setEditIsOpen(false)}
       >
         <Form onSubmit={handleSubmit(editRow)}>
-          <input
-            type='text'
-            {...register("name")}
-            placeholder='Nome do Produto'
-          />
+          <input type='text' {...register("name")} placeholder='Product Name' />
           <input
             type='number'
             {...register("price")}
-            placeholder='Valor (R$)'
+            placeholder='Price (R$)'
           />
-          <Button image={""} type='submit' value='Salvar' />
+          <Button image={""} type='submit' value='SAVE' />
         </Form>
       </ReactModal>
 
@@ -191,11 +196,11 @@ export const AdminPage = () => {
         isOpen={deleteIsOpen}
         onRequestClose={() => setDeleteIsOpen(false)}
       >
-        <p>Tem certeza que quer deletar o Produto #{actualRow.id}</p>
+        <p>Are you sure you want to delete Product #{actualRow.id}</p>
         <Button
           image={""}
           type='button'
-          value='Deletar'
+          value='DELETE'
           handleClick={() => deleteRow(actualRow.id)}
         />
       </ReactModal>
